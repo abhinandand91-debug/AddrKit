@@ -44,7 +44,8 @@ see one row per owner.
 ## What preload means
 
 `Addr.Preload(label)` **downloads bundles to the disk cache**. It does not load assets into memory and keeps no handle.
-Progress is download progress (0 to 1). Content that is local or already cached completes immediately.
+Progress is download progress (0 to 1). Content that is local or already cached completes immediately
+(on WebGL, "local" bundles are still fetched over HTTP, so Preload and `GetDownloadSize` reflect that).
 To keep assets in memory, use `Load` / `LoadAll` / `SpawnAll` with an owner.
 
 ## `LoadAll` vs `SpawnAll`
@@ -68,6 +69,17 @@ by the scene unload.
   the owner when the pool is discarded. Do not `Despawn` pooled instances you intend to reuse.
 - **Scene transitions**: use one `AddrScope` per scene; dispose it before loading the next scene.
 
-## Supported versions
+## Supported versions and platforms
 
-Unity 6 (6000.0 and newer) and Addressables 2.x. Developed and tested on Unity 6000.3 with Addressables 2.6.
+Unity 6 (6000.0 and newer) and Addressables 2.x. Developed on Unity 6000.3 with Addressables 2.6.
+
+Verified by running a scripted 21-check smoke test inside a built player (every Addr API, incl. mid-load release,
+cancellation, scenes, preload, 100-cycle churn):
+
+| Target | Backend | Result |
+|---|---|---|
+| macOS standalone (development) | Mono | 21/21 pass |
+| WebGL (release, high managed stripping) | IL2CPP | 21/21 pass, run in a browser |
+| Android ARM64 (release, high stripping) | IL2CPP | builds (not run on a device) |
+
+Not yet verified: Windows/Linux standalone, iOS, consoles, Unity versions other than 6000.3.

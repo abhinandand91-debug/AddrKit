@@ -9,6 +9,7 @@
 | Spawn returns null | The owner was destroyed while the load was in flight. This is by design: the load is discarded. |
 | Memory keeps growing | Open the Debug tab or press F9. Rows that never disappear have a global owner or a scope that was never disposed. |
 | Works in the Editor, fails in a build | Build content first (`Tools > AddrKit > Build Content`) before building the player. |
+| `GetDownloadSize` is not 0 for local content | Expected on WebGL: bundles are always fetched over HTTP there. Elsewhere it means the bundle is remote and not cached yet. |
 | Remote content does not load | Use Existing Build, Remote On, server running, and the Server URL matches. Check the `ServerData/<platform>` folder exists. |
 | Objects look pink/missing in bundles | A dependency (shader, material) was not included. Run Analyze and make shared dependencies addressable. |
 | `Despawn: ... was not spawned by AddrKit` | You passed an object that came from `Instantiate`. Use `Destroy` for those. |

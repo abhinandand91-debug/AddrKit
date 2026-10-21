@@ -22,6 +22,11 @@
       "displayName": "Quick Start",
       "description": "Small scripts showing spawning, scoped loading and a preload screen.",
       "path": "Samples~/QuickStart"
+    },
+    {
+      "displayName": "Demo",
+      "description": "A playable tour: import, run Tools > AddrKit > Set Up Demo, press Play, press F9.",
+      "path": "Samples~/Demo"
     }
   ]
 }
