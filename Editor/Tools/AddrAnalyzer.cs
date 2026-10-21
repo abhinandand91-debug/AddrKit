@@ -35,10 +35,27 @@ namespace AddrKit.Editor
             CheckDuplicateAddresses(entries, findings);
             CheckDuplicatedDependencies(settings, entries, findings);
             CheckLargeAssets(entries, addr.largeAssetWarningMB, findings);
+            CheckStaleKeys(settings, addr, findings);
 
             if (findings.Count == 0)
                 findings.Add(new AnalyzerFinding { Severity = FindingSeverity.Info, Message = $"No problems found in {entries.Count} addressable asset(s)." });
             return findings;
+        }
+
+        /// <summary>The generated Keys file should match the current addresses.</summary>
+        static void CheckStaleKeys(AddressableAssetSettings settings, AddrSettings addr, List<AnalyzerFinding> findings)
+        {
+            bool exists = File.Exists(addr.keysOutputPath);
+            if (exists && File.ReadAllText(addr.keysOutputPath) == KeyGenerator.BuildSourceFromProject(settings, addr)) return;
+
+            findings.Add(new AnalyzerFinding
+            {
+                Severity = FindingSeverity.Warning,
+                Message = exists
+                    ? "Generated Keys are out of date. Run Tools > AddrKit > Generate Keys."
+                    : "No generated Keys file yet. Run Tools > AddrKit > Generate Keys.",
+                AssetPath = exists ? addr.keysOutputPath : null
+            });
         }
 
         static void CheckDuplicateAddresses(List<AddressableAssetEntry> entries, List<AnalyzerFinding> findings)

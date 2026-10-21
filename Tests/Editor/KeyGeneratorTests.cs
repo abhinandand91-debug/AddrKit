@@ -75,5 +75,13 @@ namespace AddrKit.Tests
             string source = KeyGenerator.BuildSource(new[] { "a\"b" }, new string[0], "");
             StringAssert.Contains("\"a\\\"b\"", source);
         }
+
+        [Test]
+        public void BuildSource_IsDeterministic_RegardlessOfInputOrder()
+        {
+            var a = KeyGenerator.BuildSource(new[] { "Z/b", "A/c", "A/a", "M" }, new[] { "y", "x" }, "G");
+            var b = KeyGenerator.BuildSource(new[] { "M", "A/a", "Z/b", "A/c", "A/a" }, new[] { "x", "y" }, "G");
+            Assert.AreEqual(a, b);
+        }
     }
 }

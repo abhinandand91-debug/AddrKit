@@ -61,40 +61,47 @@ namespace AddrKit
         // ------------------------------------------------------------ loading assets
 
         /// <summary>Loads one asset (sprite, audio clip, prefab asset, ScriptableObject...).</summary>
-        public static Task<T> Load<T>(string key, object owner = null) where T : class
-            => Service.Load<T>(key, owner);
+        public static Task<T> Load<T>(string key, object owner = null, CancellationToken cancellation = default) where T : class
+            => Service.Load<T>(key, owner, cancellation);
 
         /// <summary>Loads one asset from an Inspector AssetReference.</summary>
-        public static Task<T> Load<T>(AssetReference reference, object owner = null) where T : class
-            => Service.Load<T>(RuntimeKey(reference), owner);
+        public static Task<T> Load<T>(AssetReference reference, object owner = null, CancellationToken cancellation = default) where T : class
+            => Service.Load<T>(RuntimeKey(reference), owner, cancellation);
 
         /// <summary>Loads every asset that has the label (or address) and returns them all.</summary>
-        public static Task<IList<T>> LoadAll<T>(string labelOrKey, object owner = null) where T : class
-            => Service.LoadAll<T>(labelOrKey, owner);
+        public static Task<IList<T>> LoadAll<T>(string labelOrKey, object owner = null, CancellationToken cancellation = default) where T : class
+            => Service.LoadAll<T>(labelOrKey, owner, cancellation);
 
         // ------------------------------------------------------------ spawning
 
         /// <summary>Instantiates a prefab at its own position.</summary>
-        public static Task<GameObject> Spawn(string key, object owner = null)
-            => Service.Spawn(key, new InstantiationParameters(null, false), owner);
+        public static Task<GameObject> Spawn(string key, object owner = null, CancellationToken cancellation = default)
+            => Service.Spawn(key, new InstantiationParameters(null, false), owner, cancellation);
 
         /// <summary>Instantiates a prefab at a world position.</summary>
-        public static Task<GameObject> Spawn(string key, Vector3 position, Quaternion rotation, object owner = null, Transform parent = null)
-            => Service.Spawn(key, new InstantiationParameters(position, rotation, parent), owner);
+        public static Task<GameObject> Spawn(string key, Vector3 position, Quaternion rotation, object owner = null, Transform parent = null, CancellationToken cancellation = default)
+            => Service.Spawn(key, new InstantiationParameters(position, rotation, parent), owner, cancellation);
 
         /// <summary>Instantiates a prefab as a child (local transform of the prefab is kept).</summary>
-        public static Task<GameObject> SpawnUnder(string key, Transform parent, object owner = null)
-            => Service.Spawn(key, new InstantiationParameters(parent, false), owner);
+        public static Task<GameObject> SpawnUnder(string key, Transform parent, object owner = null, CancellationToken cancellation = default)
+            => Service.Spawn(key, new InstantiationParameters(parent, false), owner, cancellation);
+
+        /// <summary>
+        /// Instantiates every prefab that has the label, each tracked by the owner like a normal Spawn.
+        /// Prefer this over LoadAll + Instantiate, which leaves the instances untracked.
+        /// </summary>
+        public static Task<IList<GameObject>> SpawnAll(string label, object owner = null, Transform parent = null, CancellationToken cancellation = default)
+            => Service.SpawnAll(label, new InstantiationParameters(parent, false), owner, cancellation);
 
         /// <summary>Instantiates from an Inspector AssetReference.</summary>
-        public static Task<GameObject> Spawn(AssetReference reference, Vector3 position, Quaternion rotation, object owner = null, Transform parent = null)
-            => Service.Spawn(RuntimeKey(reference), new InstantiationParameters(position, rotation, parent), owner);
+        public static Task<GameObject> Spawn(AssetReference reference, Vector3 position, Quaternion rotation, object owner = null, Transform parent = null, CancellationToken cancellation = default)
+            => Service.Spawn(RuntimeKey(reference), new InstantiationParameters(position, rotation, parent), owner, cancellation);
 
         // ------------------------------------------------------------ scenes
 
         /// <summary>Loads a scene by address. Scenes are global by default; unload them with <see cref="UnloadScene"/>.</summary>
-        public static Task<SceneInstance> LoadScene(string key, bool additive = true, object owner = null)
-            => Service.LoadScene(key, additive, owner);
+        public static Task<SceneInstance> LoadScene(string key, bool additive = true, object owner = null, CancellationToken cancellation = default)
+            => Service.LoadScene(key, additive, owner, cancellation);
 
         public static Task UnloadScene(string key) => Service.UnloadScene(key);
 
@@ -114,7 +121,12 @@ namespace AddrKit
 
         // ------------------------------------------------------------ downloads
 
-        /// <summary>Downloads (and caches) everything the key or label needs, reporting progress from 0 to 1.</summary>
+        /// <summary>
+        /// Downloads everything the key or label needs into the disk cache, reporting download progress from 0 to 1.
+        /// It does NOT load anything into memory and keeps no handle, so there is nothing to release.
+        /// Already-cached or local content completes immediately. Failure throws <see cref="AddrException"/>;
+        /// cancelling throws OperationCanceledException and stops reporting.
+        /// </summary>
         public static Task Preload(string labelOrKey, Action<float> onProgress = null, CancellationToken cancellation = default)
             => Service.Preload(labelOrKey, onProgress, cancellation);
 

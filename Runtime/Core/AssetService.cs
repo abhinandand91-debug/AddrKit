@@ -28,43 +28,69 @@ namespace AddrKit
 
         // ---------------------------------------------------------------- loading
 
-        public async Task<T> Load<T>(object key, object owner = null) where T : class
+        public async Task<T> Load<T>(object key, object owner = null, CancellationToken cancellation = default) where T : class
         {
+            cancellation.ThrowIfCancellationRequested();
             var handle = Addressables.LoadAssetAsync<T>(key);
             var record = Track(key, typeof(T), LoadKind.Asset, handle, owner);
 
-            T result = await Complete(handle, record, key);
+            T result = await Complete(handle, record, key, cancellation);
+            if (record.Released) return null;
             record.Asset = result;
-            return record.Released ? null : result;
+            return result;
         }
 
-        public async Task<IList<T>> LoadAll<T>(object keyOrLabel, object owner = null) where T : class
+        public async Task<IList<T>> LoadAll<T>(object keyOrLabel, object owner = null, CancellationToken cancellation = default) where T : class
         {
+            cancellation.ThrowIfCancellationRequested();
             var handle = Addressables.LoadAssetsAsync<T>(keyOrLabel, (Action<T>)null);
             var record = Track(keyOrLabel, typeof(T), LoadKind.Assets, handle, owner);
 
-            IList<T> result = await Complete(handle, record, keyOrLabel);
+            IList<T> result = await Complete(handle, record, keyOrLabel, cancellation);
             return record.Released ? new List<T>() : result;
         }
 
-        public async Task<GameObject> Spawn(object key, InstantiationParameters parameters, object owner = null)
+        public async Task<GameObject> Spawn(object key, InstantiationParameters parameters, object owner = null, CancellationToken cancellation = default)
         {
+            cancellation.ThrowIfCancellationRequested();
             var handle = Addressables.InstantiateAsync(key, parameters);
             var record = Track(key, typeof(GameObject), LoadKind.Instance, handle, owner);
 
-            GameObject instance = await Complete(handle, record, key);
+            GameObject instance = await Complete(handle, record, key, cancellation);
+            if (record.Released) return null;
             record.Instance = instance;
-            return record.Released ? null : instance;
+            return instance;
         }
 
-        public async Task<SceneInstance> LoadScene(object key, bool additive, object owner = null)
+        public async Task<IList<GameObject>> SpawnAll(object label, InstantiationParameters parameters, object owner = null, CancellationToken cancellation = default)
         {
+            cancellation.ThrowIfCancellationRequested();
+
+            // Find every address under the label, then spawn each through the normal tracked path.
+            var locationsHandle = Addressables.LoadResourceLocationsAsync(label, typeof(GameObject));
+            IList<UnityEngine.ResourceManagement.ResourceLocations.IResourceLocation> locations = await locationsHandle.Task;
+            var keys = new List<string>();
+            foreach (var location in locations) keys.Add(location.PrimaryKey);
+            Addressables.Release(locationsHandle);
+
+            var tasks = new List<Task<GameObject>>();
+            foreach (string key in keys) tasks.Add(Spawn(key, parameters, owner, cancellation));
+            GameObject[] spawned = await Task.WhenAll(tasks);
+
+            var result = new List<GameObject>();
+            foreach (GameObject go in spawned) if (go != null) result.Add(go);
+            return result;
+        }
+
+        public async Task<SceneInstance> LoadScene(object key, bool additive, object owner = null, CancellationToken cancellation = default)
+        {
+            cancellation.ThrowIfCancellationRequested();
             var mode = additive ? UnityEngine.SceneManagement.LoadSceneMode.Additive
                                 : UnityEngine.SceneManagement.LoadSceneMode.Single;
             var handle = Addressables.LoadSceneAsync(key, mode);
             var record = Track(key, typeof(SceneInstance), LoadKind.Scene, handle, owner);
 
-            return await Complete(handle, record, key);
+            return await Complete(handle, record, key, cancellation);
         }
 
         public async Task UnloadScene(object key)
@@ -203,14 +229,31 @@ namespace AddrKit
             return record;
         }
 
-        /// <summary>Waits for a handle. On failure the record is dropped and a readable exception is thrown.</summary>
-        async Task<TResult> Complete<TResult>(AsyncOperationHandle<TResult> handle, LoadRecord record, object key)
+        /// <summary>
+        /// Waits for a handle.
+        /// - Released meanwhile (owner destroyed, scope disposed): returns default; the release already cleaned up.
+        /// - Cancelled: releases and throws OperationCanceledException.
+        /// - Failed: releases and throws a readable AddrException.
+        /// </summary>
+        async Task<TResult> Complete<TResult>(AsyncOperationHandle<TResult> handle, LoadRecord record, object key, CancellationToken cancellation)
         {
             TResult result = default;
             Exception error = null;
 
-            try { result = await handle.Task; }
-            catch (Exception e) { error = e; }
+            // Cancelling is just "release this record now"; the checks below then see it was released.
+            using (cancellation.Register(() => ReleaseRecord(record)))
+            {
+                try { result = await handle.Task; }
+                catch (Exception e) { error = e; }
+            }
+
+            // A released handle is invalid: do not touch it.
+            if (record.Released)
+            {
+                cancellation.ThrowIfCancellationRequested();
+                AddrLog.Verbose($"{record} finished after its owner was released; result discarded.");
+                return default;
+            }
 
             if (error != null || handle.Status != AsyncOperationStatus.Succeeded)
             {
@@ -218,8 +261,6 @@ namespace AddrKit
                 throw AddrException.ForKey(key, error ?? handle.OperationException);
             }
 
-            if (record.Released)
-                AddrLog.Verbose($"{record} finished after its owner was released; result discarded.");
             return result;
         }
 

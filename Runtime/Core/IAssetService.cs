@@ -15,13 +15,18 @@ namespace AddrKit
     /// An "owner" is anything: a MonoBehaviour, a GameObject, an <see cref="AddrScope"/>.
     /// When the owner is a destroyed Unity object, everything it loaded is released.
     /// Passing null makes the load global: it stays until you release it.
+    ///
+    /// If the owner is released while a load is still running, the load is abandoned: the task completes
+    /// with null (or an empty list) and nothing stays in memory. If the CancellationToken is cancelled, the load is
+    /// abandoned the same way and the task is cancelled (OperationCanceledException). See Documentation~/Lifecycle.md.
     /// </summary>
     public interface IAssetService
     {
-        Task<T> Load<T>(object key, object owner = null) where T : class;
-        Task<IList<T>> LoadAll<T>(object keyOrLabel, object owner = null) where T : class;
-        Task<GameObject> Spawn(object key, InstantiationParameters parameters, object owner = null);
-        Task<SceneInstance> LoadScene(object key, bool additive, object owner = null);
+        Task<T> Load<T>(object key, object owner = null, CancellationToken cancellation = default) where T : class;
+        Task<IList<T>> LoadAll<T>(object keyOrLabel, object owner = null, CancellationToken cancellation = default) where T : class;
+        Task<GameObject> Spawn(object key, InstantiationParameters parameters, object owner = null, CancellationToken cancellation = default);
+        Task<IList<GameObject>> SpawnAll(object label, InstantiationParameters parameters, object owner = null, CancellationToken cancellation = default);
+        Task<SceneInstance> LoadScene(object key, bool additive, object owner = null, CancellationToken cancellation = default);
         Task UnloadScene(object key);
 
         void Despawn(GameObject instance);
