@@ -27,6 +27,7 @@ Requires Unity 6 and Addressables 2.x (installed automatically).
 
 Full walkthrough: [Documentation~/QuickStart.md](Documentation~/QuickStart.md).
 Concepts explained plainly: [Documentation~/Concepts.md](Documentation~/Concepts.md).
+Exactly who owns what, and what happens on cancel/destroy: [Documentation~/Lifecycle.md](Documentation~/Lifecycle.md).
 When something goes wrong: [Documentation~/Troubleshooting.md](Documentation~/Troubleshooting.md).
 
 ## What is in the box
@@ -50,10 +51,11 @@ When something goes wrong: [Documentation~/Troubleshooting.md](Documentation~/Tr
 | `Addr.LoadAll<T>(label, owner)` | Loads every asset with the label |
 | `Addr.Spawn(key, pos, rot, owner, parent)` | Instantiates a prefab |
 | `Addr.SpawnUnder(key, parent, owner)` | Instantiates as a child |
+| `Addr.SpawnAll(label, owner)` | Instantiates every prefab with the label, all tracked |
 | `Addr.LoadScene(key, additive)` / `UnloadScene(key)` | Scenes by address |
 | `Addr.Despawn(go)` / `Addr.Unload(asset)` | Release one thing early |
 | `Addr.ReleaseAll(owner)` | Release everything an owner loaded |
-| `Addr.Preload(label, onProgress)` | Download and cache, with progress |
+| `Addr.Preload(label, onProgress)` | Download to the disk cache (not memory), with progress |
 | `Addr.GetDownloadSize(label)` | Bytes left to download |
 | `Addr.UpdateCatalogs()` | Pick up new remote content |
 | `Addr.Exists(key)` / `Addr.Snapshot()` | Check a key / list live loads |

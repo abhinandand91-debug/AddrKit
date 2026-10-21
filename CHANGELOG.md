@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.1.1
+
+- Fixed: releasing an owner (or disposing a scope) while a load was in flight made the caller's task throw
+  "invalid operation handle". It now completes with null and leaves nothing behind.
+- Added `CancellationToken` to `Load`, `LoadAll`, `Spawn`, `SpawnUnder`, `LoadScene`.
+- Added `Addr.SpawnAll(label, owner)`.
+- Analyzer reports stale generated Keys.
+- New `Documentation~/Lifecycle.md` (ownership, cancellation, preload semantics).
+- 8 new tests (mid-load release, double dispose, shared assets, repeated cycles, cancellation, SpawnAll, deterministic keys).
+
 ## 0.1.0
 
 First release.

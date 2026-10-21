@@ -1,12 +1,22 @@
 {
   "name": "com.abhinandan.addrkit",
   "displayName": "AddrKit",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "unity": "6000.0",
   "description": "A friendly toolkit on top of Unity Addressables: one-line loading, automatic release by owner, generated typed keys, folder rules, a setup window, leak diagnostics and preloading.",
-  "keywords": ["addressables", "assets", "loading", "memory", "tools"],
-  "author": { "name": "Abhinandan Dharmadhikari" },
-  "dependencies": { "com.unity.addressables": "2.0.0" },
+  "keywords": [
+    "addressables",
+    "assets",
+    "loading",
+    "memory",
+    "tools"
+  ],
+  "author": {
+    "name": "Abhinandan Dharmadhikari"
+  },
+  "dependencies": {
+    "com.unity.addressables": "2.0.0"
+  },
   "samples": [
     {
       "displayName": "Quick Start",
