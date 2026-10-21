@@ -8,3 +8,5 @@
 # Unity package convention: these folders end in ~ but must be committed (overrides a global "*~" ignore)
 !Documentation~/
 !Samples~/
+!StoreArt~/
+StoreArt~/html/

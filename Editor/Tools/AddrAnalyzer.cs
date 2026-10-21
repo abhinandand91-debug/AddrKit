@@ -19,6 +19,9 @@ namespace AddrKit.Editor
         public FindingSeverity Severity;
         public string Message;
         public string AssetPath;
+        /// <summary>Optional one-click fix shown as a button next to the finding.</summary>
+        public string FixLabel;
+        public System.Action Fix;
     }
 
     /// <summary>
@@ -54,7 +57,9 @@ namespace AddrKit.Editor
                 Message = exists
                     ? "Generated Keys are out of date. Run Tools > AddrKit > Generate Keys."
                     : "No generated Keys file yet. Run Tools > AddrKit > Generate Keys.",
-                AssetPath = exists ? addr.keysOutputPath : null
+                AssetPath = exists ? addr.keysOutputPath : null,
+                FixLabel = "Regenerate",
+                Fix = () => KeyGenerator.Generate()
             });
         }
 
@@ -104,9 +109,28 @@ namespace AddrKit.Editor
                 {
                     Severity = FindingSeverity.Warning,
                     Message = $"'{Path.GetFileName(pair.Key)}' is copied into {pair.Value.Count} bundles. Mark it Addressable to store it once.",
-                    AssetPath = pair.Key
+                    AssetPath = pair.Key,
+                    FixLabel = "Make addressable",
+                    Fix = () => MakeShared(pair.Key)
                 });
             }
+        }
+
+        public const string SharedGroupName = "Shared";
+
+        /// <summary>Puts an asset into the "Shared" group so every bundle that uses it references one copy.</summary>
+        public static void MakeShared(string assetPath)
+        {
+            var settings = AddrEditorUtil.AddressablesSettings;
+            if (settings == null) return;
+
+            var group = settings.FindGroup(SharedGroupName) ?? settings.CreateGroup(SharedGroupName, false, false, false, null,
+                typeof(BundledAssetGroupSchema), typeof(UnityEditor.AddressableAssets.Settings.GroupSchemas.ContentUpdateGroupSchema));
+
+            var entry = settings.CreateOrMoveEntry(AssetDatabase.AssetPathToGUID(assetPath), group);
+            entry.address = "Shared/" + Path.GetFileNameWithoutExtension(assetPath);
+            settings.SetDirty(AddressableAssetSettings.ModificationEvent.EntryMoved, entry, true, true);
+            AssetDatabase.SaveAssets();
         }
 
         static void CheckLargeAssets(List<AddressableAssetEntry> entries, int limitMB, List<AnalyzerFinding> findings)

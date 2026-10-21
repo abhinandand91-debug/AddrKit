@@ -1,7 +1,7 @@
 {
   "name": "com.abhinandan.addrkit",
   "displayName": "AddrKit",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "unity": "6000.0",
   "description": "A friendly toolkit on top of Unity Addressables: one-line loading, automatic release by owner, generated typed keys, folder rules, a setup window, leak diagnostics and preloading.",
   "keywords": [
@@ -28,5 +28,8 @@
       "description": "A playable tour: import, run Tools > AddrKit > Set Up Demo, press Play, press F9.",
       "path": "Samples~/Demo"
     }
-  ]
+  ],
+  "documentationUrl": "https://github.com/abhinandand91-debug/AddrKit#readme",
+  "changelogUrl": "https://github.com/abhinandand91-debug/AddrKit/blob/main/CHANGELOG.md",
+  "licensesUrl": "https://github.com/abhinandand91-debug/AddrKit/blob/main/LICENSE"
 }
