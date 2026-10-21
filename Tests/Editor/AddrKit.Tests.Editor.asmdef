@@ -1,0 +1,9 @@
+{
+  "name": "AddrKit.Tests.Editor",
+  "references": [ "AddrKit", "AddrKit.Editor", "AddrKit.Tests.PlayMode", "UnityEngine.TestRunner", "UnityEditor.TestRunner", "Unity.Addressables", "Unity.Addressables.Editor", "Unity.ResourceManager" ],
+  "includePlatforms": [ "Editor" ],
+  "overrideReferences": true,
+  "precompiledReferences": [ "nunit.framework.dll" ],
+  "defineConstraints": [ "UNITY_INCLUDE_TESTS" ],
+  "autoReferenced": false
+}
