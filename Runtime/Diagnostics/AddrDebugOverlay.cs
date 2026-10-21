@@ -48,13 +48,23 @@ namespace AddrKit
             float width = Mathf.Min(520f, Screen.width / scale - 20f);
             float height = Screen.height / scale - 20f;
 
-            GUILayout.BeginArea(new Rect(Screen.width / scale - width - 10f, 10f, width, height), GUI.skin.box);
-            GUILayout.Label($"<b>AddrKit</b>  live loads: {records.Count}   (hide: {AddrSettings.Current.overlayKey})",
-                new GUIStyle(GUI.skin.label) { richText = true });
+            var panel = new Rect(Screen.width / scale - width - 10f, 10f, width, height);
+            GUI.DrawTexture(panel, Texture2D.whiteTexture, ScaleMode.StretchToFill, true, 0, new Color(0.08f, 0.09f, 0.11f, 0.93f), 0, 6);
+
+            GUILayout.BeginArea(new Rect(panel.x + 8, panel.y + 6, panel.width - 16, panel.height - 12));
+            var text = new GUIStyle(GUI.skin.label) { richText = true, wordWrap = true, normal = { textColor = new Color(0.86f, 0.88f, 0.9f) } };
+
+            int global = 0;
+            foreach (LoadRecord r in records) if (r.OwnerName == "Global") global++;
+            GUILayout.Label($"<b>AddrKit</b>   {records.Count} live" + (global > 0 ? $"   <color=#ffb454>{global} global</color>" : "") +
+                            $"   <color=#7d8590>hide: {AddrSettings.Current.overlayKey}</color>", text);
 
             scroll = GUILayout.BeginScrollView(scroll);
             foreach (LoadRecord r in records)
-                GUILayout.Label($"{r.Kind,-8} {r.Key}  [{r.AssetType?.Name}]  owner: {r.OwnerName}  {r.Age:0.0}s  {r.Status}");
+            {
+                string owner = r.OwnerName == "Global" ? "<color=#ffb454>Global</color>" : r.OwnerName;
+                GUILayout.Label($"<color=#7d8590>{r.Kind}</color>  <b>{r.Key}</b>\n<color=#7d8590>owner</color> {owner}   <color=#7d8590>{r.Age:0.0}s</color>", text);
+            }
             GUILayout.EndScrollView();
             GUILayout.EndArea();
         }

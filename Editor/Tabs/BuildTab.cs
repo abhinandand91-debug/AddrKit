@@ -16,90 +16,98 @@ namespace AddrKit.Editor
 
         public void Draw(AddrKitWindow window)
         {
+            AddrGUI.Header("Build", "How content loads in the Editor, building bundles, and testing downloadable content.");
+
             var settings = AddrEditorUtil.AddressablesSettings;
             if (settings == null)
             {
-                EditorGUILayout.HelpBox("Run Setup first.", MessageType.Warning);
+                using (new AddrGUI.CardScope("Not set up yet"))
+                    if (AddrGUI.PrimaryButton("Set Up AddrKit")) AddrKitSetup.RunSetup();
                 return;
             }
 
             DrawPlayModeScript(settings);
-            EditorGUILayout.Space();
             DrawBuild();
-            EditorGUILayout.Space();
             DrawRemote(settings);
         }
 
-        // ---- how Addressables loads while you press Play in the Editor
         static void DrawPlayModeScript(AddressableAssetSettings settings)
         {
-            EditorGUILayout.LabelField("Play mode script", EditorStyles.boldLabel);
-            EditorGUILayout.HelpBox(
-                "Use Asset Database: fastest, no build needed (recommended while working).\n" +
-                "Use Existing Build: loads real bundles, so build content first. Use it to test the real thing.",
-                MessageType.None);
-
-            var names = new List<string>();
-            var indices = new List<int>();
-            for (int i = 0; i < settings.DataBuilders.Count; i++)
+            using (new AddrGUI.CardScope("Play mode script"))
             {
-                if (settings.DataBuilders[i] is IDataBuilder builder && builder.CanBuildData<AddressablesPlayModeBuildResult>())
-                {
-                    names.Add(builder.Name);
-                    indices.Add(i);
-                }
-            }
+                GUILayout.Label("How Addressables loads when you press Play in the Editor.", AddrGUI.Hint);
 
-            int current = Mathf.Max(0, indices.IndexOf(settings.ActivePlayModeDataBuilderIndex));
-            int chosen = EditorGUILayout.Popup(current, names.ToArray());
-            if (chosen != current) settings.ActivePlayModeDataBuilderIndex = indices[chosen];
+                var names = new List<string>();
+                var indices = new List<int>();
+                for (int i = 0; i < settings.DataBuilders.Count; i++)
+                {
+                    if (settings.DataBuilders[i] is IDataBuilder builder && builder.CanBuildData<AddressablesPlayModeBuildResult>())
+                    {
+                        names.Add(builder.Name);
+                        indices.Add(i);
+                    }
+                }
+
+                int current = Mathf.Max(0, indices.IndexOf(settings.ActivePlayModeDataBuilderIndex));
+                int chosen = EditorGUILayout.Popup(current, names.ToArray());
+                if (chosen != current) settings.ActivePlayModeDataBuilderIndex = indices[chosen];
+
+                string active = names.Count > 0 ? names[Mathf.Clamp(chosen, 0, names.Count - 1)] : "";
+                GUILayout.Label(active.Contains("Existing")
+                    ? "Loads real bundles. Build content first. Use this to test what players get, and for remote content."
+                    : "Reads assets straight from the project. Fastest, no build needed. Use it day to day.", AddrGUI.Hint);
+            }
         }
 
         static void DrawBuild()
         {
-            EditorGUILayout.LabelField("Content", EditorStyles.boldLabel);
-            using (new EditorGUILayout.HorizontalScope())
+            using (new AddrGUI.CardScope("Content"))
             {
-                if (GUILayout.Button("Build Content", GUILayout.Height(26))) AddrKitSetup.BuildContent();
-                if (GUILayout.Button("Clean Build Cache", GUILayout.Height(26)))
-                    AddressableAssetSettings.CleanPlayerContent();
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    if (AddrGUI.PrimaryButton("Build Content", 30)) AddrKitSetup.BuildContent();
+                    if (AddrGUI.Button("Clean Build Cache", 30, GUILayout.Width(130))) AddressableAssetSettings.CleanPlayerContent();
+                }
+                GUILayout.Label("Build content before making a player build, and before testing with \"Use Existing Build\".", AddrGUI.Hint);
             }
         }
 
-        // ---- test remote content on this machine
         void DrawRemote(AddressableAssetSettings settings)
         {
-            EditorGUILayout.LabelField("Remote content (downloadable)", EditorStyles.boldLabel);
-            EditorGUILayout.HelpBox(
-                "1) Tick 'remote' on a rule.  2) Turn remote on below.  3) Build Content.  " +
-                "4) Start the local server and press Play with 'Use Existing Build'.", MessageType.None);
-
-            remoteUrl ??= "http://localhost:" + port;
-            remoteUrl = EditorGUILayout.TextField("Server URL", remoteUrl);
-
-            using (new EditorGUILayout.HorizontalScope())
+            using (new AddrGUI.CardScope("Remote content (downloadable)"))
             {
-                if (GUILayout.Button("Turn Remote On")) RemoteSetup.Configure(settings, true, remoteUrl);
-                if (GUILayout.Button("Turn Remote Off")) RemoteSetup.Configure(settings, false, remoteUrl);
-            }
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    AddrGUI.DrawPill(settings.BuildRemoteCatalog ? "Remote on" : "Remote off", settings.BuildRemoteCatalog ? Tone.Info : Tone.Neutral);
+                    AddrGUI.DrawPill(LocalContentServer.IsRunning ? $"Server :{LocalContentServer.Port}" : "Server stopped",
+                        LocalContentServer.IsRunning ? Tone.Good : Tone.Neutral);
+                }
+                GUILayout.Label("1  Tick \"remote\" on a rule.   2  Turn remote on.   3  Build Content.   4  Start the server and press Play with \"Use Existing Build\".", AddrGUI.Hint);
+                GUILayout.Space(4);
 
-            EditorGUILayout.LabelField("Remote catalog", settings.BuildRemoteCatalog ? "On" : "Off");
+                remoteUrl = remoteUrl ?? "http://localhost:" + port;
+                remoteUrl = EditorGUILayout.TextField("Server URL", remoteUrl);
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    if (AddrGUI.Button("Turn Remote On", 24)) RemoteSetup.Configure(settings, true, remoteUrl);
+                    if (AddrGUI.Button("Turn Remote Off", 24)) RemoteSetup.Configure(settings, false, remoteUrl);
+                }
 
-            port = EditorGUILayout.IntField("Local server port", port);
-            using (new EditorGUILayout.HorizontalScope())
-            {
-                using (new EditorGUI.DisabledScope(LocalContentServer.IsRunning))
-                    if (GUILayout.Button("Start Local Server"))
-                    {
-                        System.IO.Directory.CreateDirectory(RemoteSetup.ServerFolder);
-                        LocalContentServer.Start(RemoteSetup.ServerFolder, port);
-                    }
-                using (new EditorGUI.DisabledScope(!LocalContentServer.IsRunning))
-                    if (GUILayout.Button("Stop Server")) LocalContentServer.Stop();
+                AddrGUI.Separator();
+                port = EditorGUILayout.IntField("Local server port", port);
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    using (new EditorGUI.DisabledScope(LocalContentServer.IsRunning))
+                        if (AddrGUI.Button("Start Local Server", 24))
+                        {
+                            System.IO.Directory.CreateDirectory(RemoteSetup.ServerFolder);
+                            LocalContentServer.Start(RemoteSetup.ServerFolder, port);
+                        }
+                    using (new EditorGUI.DisabledScope(!LocalContentServer.IsRunning))
+                        if (AddrGUI.Button("Stop Server", 24)) LocalContentServer.Stop();
+                }
+                GUILayout.Label($"Serves the {RemoteSetup.ServerFolder}/ folder. For production, upload it to your CDN and put that URL above.", AddrGUI.Hint);
             }
-            EditorGUILayout.LabelField("Server", LocalContentServer.IsRunning
-                ? $"Running on port {LocalContentServer.Port}, serving {RemoteSetup.ServerFolder}/"
-                : "Stopped");
         }
     }
 }

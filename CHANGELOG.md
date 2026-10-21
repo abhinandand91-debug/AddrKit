@@ -1,6 +1,14 @@
 # Changelog
 
-## Unreleased
+## 0.1.2
+
+- **Editor window redesign**: card layout with status pills, welcome and overview pages, rule cards with live address preview
+  (the Rules tab now lists every rule set), analyzer one-click fixes ("Make addressable", "Regenerate"), searchable Debug tab
+  with "Copy report" and highlighted global loads.
+- `[AddrKey]` drawer suggests the closest real address when the key is wrong (and caches the address list).
+- F9 overlay and Demo are legible on any background; global loads are highlighted.
+- Samples are namespaced (`AddrKit.Samples`); `package.json` has documentation, changelog and license URLs.
+- Store art and listing draft in `StoreArt~/`.
 
 - New **Demo** sample: import it, run `Tools > AddrKit > Set Up Demo`, press Play, press F9. Generates its own content, rules and scene for any render pipeline.
 - Real-build verification: 21-check smoke test passes in a macOS Mono player and a WebGL IL2CPP (high stripping) player; Android IL2CPP ARM64 builds.
