@@ -130,7 +130,10 @@ namespace AddrKit
         public static Task Preload(string labelOrKey, Action<float> onProgress = null, CancellationToken cancellation = default)
             => Service.Preload(labelOrKey, onProgress, cancellation);
 
-        /// <summary>Bytes still to download for this key or label. Zero means local or already cached.</summary>
+        /// <summary>
+        /// Bytes still to download for this key or label. Zero means it is already on disk (local build or cache).
+        /// On WebGL even "local" bundles are fetched over HTTP, so they report their size until the browser caches them.
+        /// </summary>
         public static Task<long> GetDownloadSize(string labelOrKey) => Service.GetDownloadSize(labelOrKey);
 
         /// <summary>Checks the remote server for new content. Returns how many catalogs were updated.</summary>

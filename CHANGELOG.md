@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- New **Demo** sample: import it, run `Tools > AddrKit > Set Up Demo`, press Play, press F9. Generates its own content, rules and scene for any render pipeline.
+- Real-build verification: 21-check smoke test passes in a macOS Mono player and a WebGL IL2CPP (high stripping) player; Android IL2CPP ARM64 builds.
+- Docs: `GetDownloadSize` / Preload behavior on WebGL, verified platforms table.
+
 ## 0.1.1
 
 - Fixed: releasing an owner (or disposing a scope) while a load was in flight made the caller's task throw
