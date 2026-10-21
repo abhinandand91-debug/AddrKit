@@ -1,0 +1,8 @@
+{
+  "name": "AddrKit.Tests.PlayMode",
+  "references": [ "AddrKit", "UnityEngine.TestRunner", "Unity.Addressables", "Unity.ResourceManager" ],
+  "overrideReferences": true,
+  "precompiledReferences": [ "nunit.framework.dll" ],
+  "defineConstraints": [ "UNITY_INCLUDE_TESTS" ],
+  "autoReferenced": false
+}

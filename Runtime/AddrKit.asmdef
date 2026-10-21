@@ -1,0 +1,6 @@
+{
+  "name": "AddrKit",
+  "rootNamespace": "AddrKit",
+  "references": [ "Unity.Addressables", "Unity.ResourceManager" ],
+  "autoReferenced": true
+}
