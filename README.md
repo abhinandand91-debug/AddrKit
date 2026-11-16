@@ -1,4 +1,25 @@
-# AddrKit
+<!-- showcase-header -->
+<div align="center">
+
+<img src="docs/media/cover.jpg" width="640" alt="AddrKit">
+
+<h1>AddrKit</h1>
+
+<p><b>A friendly layer on top of Unity Addressables: one-line loading, automatic release, typed keys and a leak debugger.</b></p>
+
+<img src="https://img.shields.io/badge/Unity-Addressables-000000?style=flat-square&logo=unity&logoColor=white" alt="Unity: Addressables"> <img src="https://img.shields.io/badge/UPM-package-2ea44f?style=flat-square" alt="UPM: package">
+
+<p><a href="https://abhinandand91-debug.github.io/">Portfolio</a></p>
+
+<p><img src="docs/media/shot-1.jpg" width="280" alt="Spawn and forget">&nbsp;<img src="docs/media/shot-2.jpg" width="280" alt="Leak debugger">&nbsp;<img src="docs/media/shot-3.jpg" width="280" alt="Folder rules"></p>
+<p><img src="docs/media/shot-4.jpg" width="280" alt="Typed keys">&nbsp;<img src="docs/media/shot-5.jpg" width="280" alt="Analyzer">&nbsp;<img src="docs/media/shot-6.jpg" width="280" alt="Inspector"></p>
+
+</div>
+
+---
+
+<!-- /showcase-header -->
+## About
 
 A friendly layer on top of Unity Addressables. Load things in one line, never write `Release` by hand,
 catch typos at compile time, and see exactly what is in memory.
@@ -14,12 +35,12 @@ await Addr.Preload(Labels.Level1, p => bar.value = p);
 
 When `this` is destroyed, the goblin and the icon are released. That is the whole memory model.
 
-## Install
+### Install
 
 Package Manager > Add package from disk (or git URL) > `package.json`.
 Requires Unity 6 and Addressables 2.x (installed automatically).
 
-## Set up in 3 steps
+### Set up in 3 steps
 
 1. `Tools > AddrKit > Run Setup`
 2. Open `Tools > AddrKit > Open Window > Rules`, select a content folder in the Project window, press **Add rule for the selected folder**.
@@ -30,7 +51,7 @@ Concepts explained plainly: [Documentation~/Concepts.md](Documentation~/Concepts
 Exactly who owns what, and what happens on cancel/destroy: [Documentation~/Lifecycle.md](Documentation~/Lifecycle.md).
 When something goes wrong: [Documentation~/Troubleshooting.md](Documentation~/Troubleshooting.md).
 
-## What is in the box
+### What is in the box
 
 | Piece | What it gives you |
 |---|---|
@@ -43,7 +64,7 @@ When something goes wrong: [Documentation~/Troubleshooting.md](Documentation~/Tr
 | `AddrSpawner`, `AddrSceneLoader` | No-code components |
 | Overlay (F9) | Live list of loaded assets in the Editor and dev builds |
 
-## API at a glance
+### API at a glance
 
 | Call | Does |
 |---|---|
@@ -60,14 +81,14 @@ When something goes wrong: [Documentation~/Troubleshooting.md](Documentation~/Tr
 | `Addr.UpdateCatalogs()` | Pick up new remote content |
 | `Addr.Exists(key)` / `Addr.Snapshot()` | Check a key / list live loads |
 
-## Design
+### Design
 
 Small layers, each in its own folder: `Runtime/Core` (service, ownership, records, errors),
 `Runtime/Addr.cs` (the facade), `Runtime/Components`, `Runtime/Diagnostics`, `Editor/Tools` (generator, analyzer, remote),
 `Editor/Rules`, `Editor/Tabs` (one file per window tab). `Addr` is a thin wrapper over `IAssetService`;
 swap `Addr.Service` in tests or for dependency injection.
 
-## Tests
+### Tests
 
 `Tests/Editor` covers key generation, typo matching and rule logic. `Tests/PlayMode` loads, spawns and releases
 real addressable content. Run both from `Window > General > Test Runner`.
